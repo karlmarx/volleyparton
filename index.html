@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Volley Parton</title>
+  <meta name="description" content="Volley Parton: pickleball team.">
+  <meta property="og:title" content="Volley Parton">
+  <meta property="og:description" content="Pickleball team.">
+  <meta name="theme-color" content="#000000">
+  <style>
+    html, body { margin: 0; height: 100%; background: #000; color: #fff; overflow: hidden;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    video { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000; }
+    h1 { position: fixed; left: 0; right: 0; bottom: 24px; margin: 0; text-align: center;
+      font-size: clamp(1.5rem, 6vw, 3rem); letter-spacing: .12em; text-transform: uppercase;
+      text-shadow: 0 2px 12px rgba(0,0,0,.8); pointer-events: none; }
+  </style>
+</head>
+<body>
+  <!-- video has no audio track; muted + playsinline are still required for autoplay on phones -->
+  <video id="v" src="video.mp4" autoplay muted loop playsinline preload="auto"></video>
+  <h1>Volley Parton</h1>
+</body>
+</html>
