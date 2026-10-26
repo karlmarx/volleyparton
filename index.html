@@ -14,13 +14,19 @@
     video { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000; }
     /* the video already shows the name; keep the heading for screen readers and search */
     h1 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    a { position: fixed; inset: 0; color: #fff; text-decoration: none; }
+    .hint { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); padding: 10px 16px;
+      border-radius: 999px; background: rgba(255,255,255,.15); backdrop-filter: blur(6px); white-space: nowrap;
+      font-size: .95rem; }
+    a:hover .hint, a:focus-visible .hint { background: rgba(255,255,255,.3); }
   </style>
 </head>
 <body>
-<a href="https://www.facebook.com/share/v/14twi7L9Ywd/">
   <!-- muted + playsinline are required for autoplay on phones -->
-  <video src="video.mp4" aria-label="Volley Parton team animation" autoplay muted loop playsinline preload="auto"></video>
-</a>
+  <a href="https://www.facebook.com/share/v/14twi7L9Ywd/" target="_blank" rel="noopener">
+    <video src="video.mp4" aria-label="Volley Parton team animation" autoplay muted loop playsinline preload="auto"></video>
+    <span class="hint">▶ Watch with music on Facebook</span>
+  </a>
   <h1>Volley Parton</h1>
 </body>
 </html>
