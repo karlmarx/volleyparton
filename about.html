@@ -46,6 +46,7 @@
     .eps .r-w .score { color: var(--mint); }
     .eps .r-l .score { color: #ff8a8a; }
     .eps .upcoming { opacity: .65; }
+    .contact a { color: var(--pink); font-weight: 600; font-size: 1.1rem; }
     .back { display: inline-block; margin-top: 2em; color: var(--pink); }
     @media (prefers-reduced-motion: reduce) { .intro p { animation: none; opacity: 1; } .rec::before { animation: none; } }
   </style>
@@ -91,8 +92,17 @@
       <span data-countdown></span>
     </div>
 
+    <h2>Fan mail</h2>
+    <p class="contact">Want to challenge us, cheer for us, or borrow a wig?<br>
+      <a data-email href="#">info at volleyparton dot org</a></p>
+
     <a class="back" href="/">← Back to the video</a>
   </main>
   <script src="team.js"></script>
+  <script>
+    // assembled here so simple scrapers don't harvest the address
+    const addr = ['info', 'volleyparton.org'].join('@');
+    document.querySelectorAll('[data-email]').forEach(a => { a.href = 'mailto:' + addr; a.textContent = addr; });
+  </script>
 </body>
 </html>
