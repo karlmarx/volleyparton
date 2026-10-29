@@ -12,4 +12,4 @@ ffmpeg -i new-clip.mov -an -c:v libx264 -crf 23 -preset slow -pix_fmt yuv420p -m
 
 ## After each game
 
-Edit the top of `team.js`: update `RECORD` and set `NEXT_GAME` (ISO time with the UTC offset, e.g. `-05:00` once clocks fall back to EST). Both pages pick it up.
+Edit `GAMES` at the top of `team.js`: fill in `us`/`them` (games won) and a funny `title` for the episode guide, and update `SEASON` (rank, total points) from the league page. The record and countdown are computed from `GAMES`; the countdown moves to the next unplayed game on its own.

@@ -35,7 +35,17 @@
     blockquote small { display: block; margin-top: 6px; opacity: .7; font-family: VT323, monospace; font-size: 1.1rem; }
     .next { text-align: center; padding: 16px; border-radius: 12px; background: #ff5fa21f; border: 2px solid var(--pink); }
     .next small { display: block; text-transform: uppercase; letter-spacing: .08em; font-size: .8rem; opacity: .8; }
-    .next span { display: block; font-family: VT323, monospace; font-size: 2.2rem; font-variant-numeric: tabular-nums; }
+    .next > span { display: block; font-family: VT323, monospace; font-size: 2.2rem; font-variant-numeric: tabular-nums; }
+    .eps { list-style: none; padding: 0; margin: 0 0 2em; display: grid; gap: 8px; }
+    .eps li { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; padding: 10px 12px;
+      border-radius: 10px; background: #ffffff0d; }
+    .eps .ep { font-family: VT323, monospace; font-size: 1.2rem; opacity: .7; }
+    .eps b { display: block; }
+    .eps small { opacity: .7; font-size: .8rem; }
+    .eps .score { font-family: VT323, monospace; font-size: 1.5rem; white-space: nowrap; }
+    .eps .r-w .score { color: var(--mint); }
+    .eps .r-l .score { color: #ff8a8a; }
+    .eps .upcoming { opacity: .65; }
     .back { display: inline-block; margin-top: 2em; color: var(--pink); }
     @media (prefers-reduced-motion: reduce) { .intro p { animation: none; opacity: 1; } .rec::before { animation: none; } }
   </style>
@@ -64,15 +74,20 @@
       <div><b data-l></b><span>Losses</span></div>
       <div><b data-t></b><span>Ties</span></div>
     </div>
-    <p class="fine">Zero ties. We don't do anything halfway, except maybe our footwork.</p>
+    <p class="fine">Zero ties. We don't do anything halfway, except maybe our footwork.
+      Currently <span data-rank></span> in Division B, yet we've outscored our opponents
+      <span data-points></span> in total points. The judges are still reviewing the tape.</p>
 
     <blockquote>
       “I came here to win. Then I saw the wigs.”
       <small>CONFESSIONAL CAM · ANONYMOUS SWEETHEART</small>
     </blockquote>
 
+    <h2>Episode guide</h2>
+    <ol class="eps" data-episodes></ol>
+
     <div class="next">
-      <small>Next episode · Sat Oct 31 · 11:30 AM ET</small>
+      <small>Next episode · <span data-next></span></small>
       <span data-countdown></span>
     </div>
 
