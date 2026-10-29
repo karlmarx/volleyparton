@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>About Volley Parton</title>
+  <meta name="description" content="The true story of six strangers picked to play on a pickleball team.">
+  <meta name="theme-color" content="#000000">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+  <style>
+    :root { --pink: #ff5fa2; --mint: #9dff8a; }
+    html, body { margin: 0; background: #000; color: #fff; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    main { max-width: 640px; margin: 0 auto; padding: 72px 16px 48px; }
+    .rec { position: fixed; top: 14px; left: 16px; font-family: VT323, monospace; font-size: 1.4rem; color: #ff3b3b; }
+    .rec::before { content: "●"; margin-right: 6px; animation: blink 1s steps(1) infinite; }
+    .play { position: fixed; top: 14px; right: 16px; font-family: VT323, monospace; font-size: 1.4rem; opacity: .8; }
+    @keyframes blink { 50% { opacity: 0; } }
+    .intro p { font-family: VT323, monospace; font-size: clamp(1.6rem, 6vw, 2.4rem); line-height: 1.15; margin: 0 0 .5em;
+      opacity: 0; animation: in .6s ease-out forwards; }
+    .intro p:last-child { color: var(--pink); }
+    @keyframes in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    h1 { font-size: clamp(2.2rem, 10vw, 3.6rem); letter-spacing: .06em; text-transform: uppercase; margin: 1.2em 0 0;
+      color: var(--pink); text-shadow: 3px 3px 0 #fff3; }
+    .sub { margin: .3em 0 2em; opacity: .8; }
+    .record { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; }
+    .record div { border: 2px solid #ffffff33; border-radius: 12px; padding: 14px 6px; }
+    .record b { display: block; font-family: VT323, monospace; font-size: 3.2rem; line-height: 1; }
+    .record .w b { color: var(--mint); }
+    .record span { font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; opacity: .75; }
+    .fine { opacity: .75; font-size: .9rem; margin: .8em 0 2em; }
+    blockquote { margin: 0 0 2em; padding: 12px 16px; border-left: 4px solid var(--pink); background: #ffffff0d;
+      border-radius: 0 8px 8px 0; }
+    blockquote small { display: block; margin-top: 6px; opacity: .7; font-family: VT323, monospace; font-size: 1.1rem; }
+    .next { text-align: center; padding: 16px; border-radius: 12px; background: #ff5fa21f; border: 2px solid var(--pink); }
+    .next small { display: block; text-transform: uppercase; letter-spacing: .08em; font-size: .8rem; opacity: .8; }
+    .next span { display: block; font-family: VT323, monospace; font-size: 2.2rem; font-variant-numeric: tabular-nums; }
+    .back { display: inline-block; margin-top: 2em; color: var(--pink); }
+    @media (prefers-reduced-motion: reduce) { .intro p { animation: none; opacity: 1; } .rec::before { animation: none; } }
+  </style>
+</head>
+<body>
+  <div class="rec" aria-hidden="true">REC</div>
+  <div class="play" aria-hidden="true">PLAY ▶</div>
+  <main>
+    <section class="intro">
+      <p style="animation-delay:.2s">This is the true story…</p>
+      <p style="animation-delay:1.2s">of six strangers…</p>
+      <p style="animation-delay:2.2s">picked to play on a pickleball team…</p>
+      <p style="animation-delay:3.2s">share four paddles and one can of hairspray…</p>
+      <p style="animation-delay:4.2s">and have their dinks recorded…</p>
+      <p style="animation-delay:5.2s">to find out what happens…</p>
+      <p style="animation-delay:6.2s">when people stop being polite…</p>
+      <p style="animation-delay:7.2s">and start getting Dolly.</p>
+    </section>
+
+    <h1>Volley Parton</h1>
+    <p class="sub">The Sweethearts of the Pride Pickleball League</p>
+
+    <h2>Season record: <span data-record></span></h2>
+    <div class="record">
+      <div class="w"><b data-w></b><span>Wins</span></div>
+      <div><b data-l></b><span>Losses</span></div>
+      <div><b data-t></b><span>Ties</span></div>
+    </div>
+    <p class="fine">Zero ties. We don't do anything halfway, except maybe our footwork.</p>
+
+    <blockquote>
+      “I came here to win. Then I saw the wigs.”
+      <small>CONFESSIONAL CAM · ANONYMOUS SWEETHEART</small>
+    </blockquote>
+
+    <div class="next">
+      <small>Next episode · Sat Oct 31 · 11:30 AM ET</small>
+      <span data-countdown></span>
+    </div>
+
+    <a class="back" href="/">← Back to the video</a>
+  </main>
+  <script src="team.js"></script>
+</body>
+</html>
