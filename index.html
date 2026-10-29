@@ -26,7 +26,7 @@
     .bar a:hover, .bar a:focus-visible { background: #ff86b9; }
     .next small { display: block; font-size: .75rem; opacity: .75; text-transform: uppercase; letter-spacing: .08em; }
     .next { text-shadow: 0 1px 6px #000; }
-    .next span { font-variant-numeric: tabular-nums; font-weight: 600; }
+    .next > span { font-variant-numeric: tabular-nums; font-weight: 600; }
     @media (max-width: 480px) { .bar { flex-direction: column; text-align: center; } }
   </style>
 </head>
@@ -38,7 +38,7 @@
   </a>
   <h1>Volley Parton</h1>
   <div class="bar">
-    <div class="next"><small>Next game · Sat Oct 31, 11:30 AM</small><span data-countdown></span></div>
+    <div class="next"><small>Next game · <span data-next></span></small><span data-countdown></span></div>
     <a href="about.html">About the team →</a>
   </div>
   <script src="team.js"></script>
