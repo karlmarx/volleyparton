@@ -10,6 +10,11 @@ The video has no audio track (music removed for copyright). To swap in a new cli
 ffmpeg -i new-clip.mov -an -c:v libx264 -crf 23 -preset slow -pix_fmt yuv420p -movflags +faststart video.mp4
 ```
 
-## After each game
+## Scores update themselves
 
-Edit `GAMES` at the top of `team.js`: fill in `us`/`them` (games won) and a funny `title` for the episode guide, and update `SEASON` (rank, total points) from the league page. The record and countdown are computed from `GAMES`; the countdown moves to the next unplayed game on its own.
+`.github/workflows/update-season.yml` runs `scripts/update-season.mjs` on Saturday afternoon, Saturday evening and Sunday morning. The script pulls our games, scores and standing from the [league page](https://pridesportsusa.com/register/rp_fpjif5), rewrites `season.js`, and commits only if something changed. Vercel deploys the commit.
+
+- **Episode titles:** add them to `titles.json`, keyed by game date (`YYYY-MM-DD`). They're merged in on the next run.
+- **Run it now:** GitHub → Actions → "Update season from league site" → Run workflow.
+- **If it fails** (the league site changed), GitHub emails you and the site keeps the last good data.
+- **Next season:** change `PROGRAM_ID` in the script to the new registration page's ID.
