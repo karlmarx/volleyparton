@@ -3,10 +3,10 @@
 // Source: https://pridesportsusa.com/register/rp_fpjif5
 const SEASON = {
   "division": "Division B",
-  "rank": 11,
+  "rank": 10,
   "teams": 16,
-  "pointsFor": 168,
-  "pointsAgainst": 139
+  "pointsFor": 249,
+  "pointsAgainst": 229
 };
 const GAMES = [
   {
@@ -36,7 +36,9 @@ const GAMES = [
   {
     "at": "2026-10-31T15:30:00.000Z",
     "opp": "Ball Smackers",
-    "court": 8
+    "court": 8,
+    "us": 6,
+    "them": 6
   },
   {
     "at": "2026-11-07T16:30:00.000Z",
