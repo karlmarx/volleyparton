@@ -42,6 +42,13 @@
     .step span { min-width: 64px; text-align: center; font-size: .85rem; font-variant-numeric: tabular-nums; }
     .primary { background: var(--pink); color: #000; border: 0; border-radius: 8px; padding: 8px 12px; font-weight: 700; }
     .spacer { flex: 1; }
+    .first { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; width: 100%; }
+    .first > span { font-size: .85rem; opacity: .85; margin-right: 2px; }
+    .fbtn { background: none; border: 1px solid var(--line); border-radius: 99px; padding: 6px 12px; font-size: .9rem; }
+    .fbtn.on { background: var(--mint); color: #000; border-color: var(--mint); font-weight: 700; }
+    .fbtn.rnd { opacity: .6; border-style: dashed; }
+    .saved { font-size: .7rem; opacity: .5; margin-right: 4px; }
+    .saved.bad { opacity: 1; color: var(--red); font-weight: 700; }
 
     .game { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 8px; padding: 8px; margin-bottom: 8px;
       border: 2px solid var(--line); border-radius: 14px; background: var(--card); }
@@ -91,7 +98,7 @@
     <div class="title">
       <h1>Lineup</h1>
       <div class="acts">
-        <span class="rec" id="rec"></span>
+        <span class="saved" id="saved"></span><span class="rec" id="rec"></span>
         <button class="ghostbtn" id="undo">↶ Undo</button>
         <button class="ghostbtn" id="reset">Reset</button>
       </div>
@@ -100,9 +107,7 @@
   </div>
 
   <div class="controls">
-    <label>First up
-      <select id="first"></select>
-    </label>
+    <div class="first" id="first"></div>
     <div class="step"><button id="less" aria-label="Fewer games">−</button><span id="total"></span><button id="more" aria-label="More games">+</button></div>
     <span class="spacer"></span>
     <button class="primary" id="roll">🔀 Re-roll</button>
@@ -122,9 +127,31 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;'
 let S = load() || fresh();
 let hist = [];
 
-function fresh() { return { present: Object.fromEntries(ALL.map(p => [p, true])), first: '', games: [], nid: 1 }; }
-function load() { try { const s = JSON.parse(localStorage.getItem(KEY)); return s && s.games ? s : null; } catch (e) { return null; } }
-function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+function fresh() { return { present: Object.fromEntries(ALL.map(p => [p, true])), first: [], games: [], nid: 1 }; }
+function load() {
+  for (const k of [KEY, KEY + '.backup']) { // fall back to the previous good copy if the main one is unreadable
+    try {
+      const s = JSON.parse(localStorage.getItem(k));
+      if (s && Array.isArray(s.games)) {
+        if (typeof s.first === 'string') s.first = s.first ? [s.first] : []; // older saves
+        if (!Array.isArray(s.first)) s.first = [];
+        return s;
+      }
+    } catch (e) {}
+  }
+  return null;
+}
+let saveOk = true;
+function save() {
+  try {
+    const prev = localStorage.getItem(KEY);
+    if (prev) localStorage.setItem(KEY + '.backup', prev);
+    localStorage.setItem(KEY, JSON.stringify(S));
+    saveOk = true;
+  } catch (e) { saveOk = false; }
+  const el = $('saved');
+  if (el) { el.textContent = saveOk ? '✓ saved' : '⚠ NOT SAVING'; el.className = 'saved' + (saveOk ? '' : ' bad'); }
+}
 
 const here = () => ALL.filter(p => S.present[p]);
 const isPlayed = g => g.us !== '' && g.them !== '' && g.us != null && g.them != null;
@@ -133,7 +160,7 @@ const mk = ([a, b]) => ({ id: S.nid++, a, b, us: '', them: '', o1: '', o2: '', o
 /* ---------- lineup generator ---------- */
 // Fills `need` more games after the games in `keep`: even game counts, even pairings,
 // a rest between games where possible, and never 3 games in a row for anyone.
-function plan(keep, need, ps, first) {
+function plan(keep, need, ps, first = []) {
   if (ps.length < 2 || need <= 0) return [];
   const pairs = [];
   for (let i = 0; i < ps.length; i++) for (let j = i + 1; j < ps.length; j++) pairs.push([ps[i], ps[j]]);
@@ -149,7 +176,7 @@ function plan(keep, need, ps, first) {
       const L = seq.length, p1 = seq[L - 1] || [], p2 = seq[L - 2] || [];
       let c = pairs.filter(([a, b]) => !(p1.includes(a) && p2.includes(a)) && !(p1.includes(b) && p2.includes(b)));
       if (!c.length) { c = pairs; viol++; }
-      if (L === 0 && first) { const f = c.filter(pr => pr.includes(first)); if (f.length) c = f; }
+      if (L === 0 && first.length) { let f = c.filter(pr => first.every(x => pr.includes(x))); if (!f.length) f = c.filter(pr => first.some(x => pr.includes(x))); if (f.length) c = f; }
       let bs = Infinity, pick;
       for (const pr of c) {
         const [a, b] = pr;
@@ -172,7 +199,7 @@ function plan(keep, need, ps, first) {
 function regen() {
   const keep = S.games.filter(isPlayed);
   const total = Math.max(S.games.length || here().length * 2, keep.length);
-  S.games = keep.concat(plan(keep, total - keep.length, here(), keep.length ? '' : S.first));
+  S.games = keep.concat(plan(keep, total - keep.length, here(), keep.length ? [] : S.first));
 }
 
 /* ---------- state changes (with undo) ---------- */
@@ -217,8 +244,9 @@ function render() {
       <b>${p}</b><span class="n"><em data-played>${c.played[p]}</em> <i>played · of <span data-planned>${c.planned[p]}</span></i></span></button>`;
   }).join('');
 
-  if (S.first && !S.present[S.first]) S.first = '';
-  $('first').innerHTML = `<option value="">Random</option>` + who.map(p => `<option ${S.first === p ? 'selected' : ''}>${p}</option>`).join('');
+  S.first = S.first.filter(p => S.present[p]);
+  $('first').innerHTML = `<span>First up</span>` + who.map(p => `<button class="fbtn ${S.first.includes(p) ? 'on' : ''}" data-first="${p}">${p}</button>`).join('')
+    + (S.first.length ? '' : `<span class="fbtn rnd">random</span>`);
   $('total').textContent = S.games.length + ' games';
 
   const { bad, msgs } = runs();
@@ -290,6 +318,15 @@ document.addEventListener('click', e => {
     mutate(() => { S.present[p] = !S.present[p]; regen(); });
     return;
   }
+  const fb = e.target.closest('[data-first]');
+  if (fb) {
+    const p = fb.dataset.first;
+    mutate(() => {
+      S.first = S.first.includes(p) ? S.first.filter(x => x !== p) : [...S.first, p].slice(-2); // max two; newest pick wins
+      regen();
+    });
+    return;
+  }
   const del = e.target.closest('[data-del]');
   if (del) { mutate(() => { S.games = S.games.filter(g => g.id != del.dataset.del); }); return; }
   const opp = e.target.closest('[data-opp]');
@@ -299,7 +336,7 @@ document.addEventListener('click', e => {
 $('more').onclick = () => addGame();
 function addGame() {
   if (here().length < 2) return toast('Pick at least two players');
-  mutate(() => { S.games.push(...plan(S.games, 1, here(), S.games.length ? '' : S.first)); });
+  mutate(() => { S.games.push(...plan(S.games, 1, here(), S.games.length ? [] : S.first)); });
 }
 $('less').onclick = () => {
   const i = S.games.map(isPlayed).lastIndexOf(false);
@@ -307,7 +344,7 @@ $('less').onclick = () => {
   mutate(() => S.games.splice(i, 1));
 };
 $('roll').onclick = () => mutate(regen);
-$('first').onchange = e => mutate(() => { S.first = e.target.value; regen(); });
+
 $('undo').onclick = () => { if (hist.length) { S = JSON.parse(hist.pop()); save(); render(); } };
 $('reset').onclick = () => {
   if (!confirm('Clear all games and scores?')) return;
@@ -389,8 +426,13 @@ function doDrop(d) {
   }
 }
 
-if (!S.games.length) { regen(); save(); }
+if (!S.games.length) regen();
 render();
+save();
+// ask the browser not to evict our data, and flush once more when the tab is hidden/closed
+try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {}
+addEventListener('pagehide', save);
+document.addEventListener('visibilitychange', () => { if (document.hidden) save(); });
 </script>
 </body>
 </html>
