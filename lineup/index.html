@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Lineup · Volley Parton</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#000000">
+  <style>
+    :root { --pink: #ff5fa2; --mint: #9dff8a; --red: #ff5a5a; --line: #ffffff26; --card: #ffffff0d; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: #000; color: #fff; -webkit-text-size-adjust: 100%;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    main { max-width: 560px; margin: 0 auto; padding: 0 12px 90px; }
+    button, input, select { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+
+    /* sticky top: who's playing + live counts */
+    .top { position: sticky; top: 0; z-index: 5; background: #000; padding: 10px 0 8px; border-bottom: 1px solid var(--line); }
+    .title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .title h1 { margin: 0; font-size: 1.1rem; letter-spacing: .08em; text-transform: uppercase; color: var(--pink); }
+    .title .acts { display: flex; gap: 6px; align-items: center; }
+    .rec { font-variant-numeric: tabular-nums; opacity: .85; font-size: .9rem; margin-right: 4px; }
+    .ghostbtn { background: none; border: 1px solid var(--line); border-radius: 8px; padding: 5px 10px; font-size: .85rem; }
+    .ghostbtn:disabled { opacity: .3; cursor: default; }
+
+    .pills { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .pill { position: relative; padding: 7px 8px 6px; border-radius: 12px; border: 2px solid var(--pink); background: #ff5fa21f;
+      text-align: left; user-select: none; -webkit-user-select: none; touch-action: none; min-width: 0; }
+    .pill b { display: block; font-size: 1rem; line-height: 1.1; }
+    .pill .n { font-variant-numeric: tabular-nums; font-size: .8rem; opacity: .9; }
+    .pill .n em { font-style: normal; font-size: 1.25rem; font-weight: 700; color: var(--mint); }
+    .pill .n i { font-style: normal; opacity: .65; }
+    .pill.off { border-color: var(--line); background: none; opacity: .45; touch-action: auto; }
+    .pill.off .n { visibility: hidden; }
+
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0 10px; }
+    .controls label { display: flex; align-items: center; gap: 6px; font-size: .85rem; opacity: .85; }
+    select { background: #111; border: 1px solid var(--line); border-radius: 8px; padding: 7px 8px; }
+    .step { display: flex; align-items: center; gap: 2px; border: 1px solid var(--line); border-radius: 8px; }
+    .step button { background: none; border: 0; width: 34px; height: 34px; font-size: 1.2rem; }
+    .step span { min-width: 64px; text-align: center; font-size: .85rem; font-variant-numeric: tabular-nums; }
+    .primary { background: var(--pink); color: #000; border: 0; border-radius: 8px; padding: 8px 12px; font-weight: 700; }
+    .spacer { flex: 1; }
+
+    .game { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 8px; padding: 8px; margin-bottom: 8px;
+      border: 2px solid var(--line); border-radius: 14px; background: var(--card); }
+    .game.next { border-color: var(--pink); }
+    .game.win { border-color: #9dff8a66; }
+    .game.loss { border-color: #ff5a5a55; }
+    .game.over { outline: 3px dashed var(--pink); outline-offset: 2px; }
+    .game.lifting { opacity: .35; }
+    .handle { width: 30px; height: 40px; display: grid; place-items: center; opacity: .6; touch-action: none; cursor: grab;
+      user-select: none; -webkit-user-select: none; font-size: 1.2rem; line-height: 1; }
+    .num { font-variant-numeric: tabular-nums; width: 1.6rem; text-align: center; font-weight: 700; opacity: .8; }
+    .chips { display: flex; gap: 6px; flex: 1; min-width: 0; }
+    .chip { flex: 1; min-width: 0; padding: 10px 6px; border-radius: 10px; background: #ffffff1a; border: 2px solid transparent;
+      text-align: center; font-weight: 600; touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .chip.bad { border-color: var(--red); background: #ff5a5a33; }
+    .chip.absent { text-decoration: line-through; opacity: .6; }
+    .chip.over, .pill.over { outline: 3px dashed var(--mint); outline-offset: 1px; }
+    .lifting { opacity: .35; }
+    .x { background: none; border: 0; width: 32px; height: 40px; font-size: 1.05rem; opacity: .5; }
+    .row2 { display: flex; align-items: center; gap: 8px; width: 100%; padding-left: 38px; flex-wrap: wrap; }
+    .score { display: flex; align-items: center; gap: 6px; }
+    .score input { width: 58px; text-align: center; font-size: 1.15rem; font-weight: 700; padding: 6px 4px; background: #111;
+      border: 1px solid var(--line); border-radius: 8px; -moz-appearance: textfield; }
+    .score input::-webkit-outer-spin-button, .score input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .score small { opacity: .6; font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; }
+    .win .score input.us, .loss .score input.them { border-color: var(--mint); }
+    .oppbtn { background: none; border: 0; opacity: .6; font-size: .85rem; padding: 6px 4px; text-decoration: underline; }
+    .opp { display: flex; gap: 6px; flex: 1; min-width: 180px; }
+    .opp input { flex: 1; min-width: 0; padding: 7px 8px; background: #111; border: 1px solid var(--line); border-radius: 8px; font-size: .9rem; }
+    .badge { font-size: .75rem; font-weight: 700; padding: 2px 8px; border-radius: 99px; }
+    .badge.nx { background: var(--pink); color: #000; }
+    .badge.warn { background: var(--red); color: #000; }
+
+    .add { width: 100%; padding: 12px; border: 2px dashed var(--line); background: none; border-radius: 14px; opacity: .8; }
+    .empty { text-align: center; opacity: .6; padding: 40px 0; }
+    .ghost { position: fixed; z-index: 50; pointer-events: none; transform: translate(-50%, -60%); opacity: .95;
+      box-shadow: 0 8px 24px #000a; background: #333 !important; width: auto !important; flex: none !important; min-width: 90px; }
+    #toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #fff; color: #000; padding: 10px 16px;
+      border-radius: 99px; font-weight: 600; font-size: .9rem; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 60; }
+    #toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <div class="title">
+      <h1>Lineup</h1>
+      <div class="acts">
+        <span class="rec" id="rec"></span>
+        <button class="ghostbtn" id="undo">↶ Undo</button>
+        <button class="ghostbtn" id="reset">Reset</button>
+      </div>
+    </div>
+    <div class="pills" id="pills"></div>
+  </div>
+
+  <div class="controls">
+    <label>First up
+      <select id="first"></select>
+    </label>
+    <div class="step"><button id="less" aria-label="Fewer games">−</button><span id="total"></span><button id="more" aria-label="More games">+</button></div>
+    <span class="spacer"></span>
+    <button class="primary" id="roll">🔀 Re-roll</button>
+  </div>
+
+  <div id="games"></div>
+  <datalist id="opps"></datalist>
+</main>
+<div id="toast"></div>
+
+<script>
+const ALL = ['Tina', 'Rich', 'Richard', 'Karl', 'Paul', 'Alan'];
+const KEY = 'volleyparton.lineup.v1';
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+let S = load() || fresh();
+let hist = [];
+
+function fresh() { return { present: Object.fromEntries(ALL.map(p => [p, true])), first: '', games: [], nid: 1 }; }
+function load() { try { const s = JSON.parse(localStorage.getItem(KEY)); return s && s.games ? s : null; } catch (e) { return null; } }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+
+const here = () => ALL.filter(p => S.present[p]);
+const isPlayed = g => g.us !== '' && g.them !== '' && g.us != null && g.them != null;
+const mk = ([a, b]) => ({ id: S.nid++, a, b, us: '', them: '', o1: '', o2: '', oOpen: false });
+
+/* ---------- lineup generator ---------- */
+// Fills `need` more games after the games in `keep`: even game counts, even pairings,
+// a rest between games where possible, and never 3 games in a row for anyone.
+function plan(keep, need, ps, first) {
+  if (ps.length < 2 || need <= 0) return [];
+  const pairs = [];
+  for (let i = 0; i < ps.length; i++) for (let j = i + 1; j < ps.length; j++) pairs.push([ps[i], ps[j]]);
+  const key = (a, b) => [a, b].sort().join('|');
+  let best = null, bestCost = Infinity;
+  for (let t = 0; t < 300; t++) {
+    const seq = keep.map(g => [g.a, g.b]), cnt = {}, pc = {};
+    ps.forEach(p => cnt[p] = 0);
+    const add = ([a, b]) => { if (a in cnt) cnt[a]++; if (b in cnt) cnt[b]++; pc[key(a, b)] = (pc[key(a, b)] || 0) + 1; };
+    seq.forEach(add);
+    const out = []; let viol = 0;
+    for (let s = 0; s < need; s++) {
+      const L = seq.length, p1 = seq[L - 1] || [], p2 = seq[L - 2] || [];
+      let c = pairs.filter(([a, b]) => !(p1.includes(a) && p2.includes(a)) && !(p1.includes(b) && p2.includes(b)));
+      if (!c.length) { c = pairs; viol++; }
+      if (L === 0 && first) { const f = c.filter(pr => pr.includes(first)); if (f.length) c = f; }
+      let bs = Infinity, pick;
+      for (const pr of c) {
+        const [a, b] = pr;
+        const sc = (cnt[a] + cnt[b]) * 10 + (pc[key(a, b)] || 0) * 4 + ((p1.includes(a) ? 1 : 0) + (p1.includes(b) ? 1 : 0)) * 3 + Math.random() * 2;
+        if (sc < bs) { bs = sc; pick = pr; }
+      }
+      const o = Math.random() < .5 ? pick : [pick[1], pick[0]];
+      seq.push(o); out.push(o); add(o);
+    }
+    const cs = Object.values(cnt), pcs = pairs.map(([a, b]) => pc[key(a, b)] || 0);
+    let b2b = 0;
+    for (let i = 1; i < seq.length; i++) if (seq[i].some(p => seq[i - 1].includes(p))) b2b++;
+    const cost = viol * 1000 + (Math.max(...cs) - Math.min(...cs)) * 100 + (Math.max(...pcs) - Math.min(...pcs)) * 10 + b2b * 2;
+    if (cost < bestCost) { bestCost = cost; best = out; }
+  }
+  return best.map(mk);
+}
+
+// Rebuild every game that hasn't been scored yet (scored games are kept).
+function regen() {
+  const keep = S.games.filter(isPlayed);
+  const total = Math.max(S.games.length || here().length * 2, keep.length);
+  S.games = keep.concat(plan(keep, total - keep.length, here(), keep.length ? '' : S.first));
+}
+
+/* ---------- state changes (with undo) ---------- */
+function mutate(fn) {
+  hist.push(JSON.stringify(S)); if (hist.length > 30) hist.shift();
+  fn(); save(); render();
+}
+function toast(msg) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+/* ---------- derived ---------- */
+function counts() {
+  const played = {}, planned = {};
+  ALL.forEach(p => { played[p] = 0; planned[p] = 0; });
+  S.games.forEach(g => [g.a, g.b].forEach(p => { planned[p]++; if (isPlayed(g)) played[p]++; }));
+  return { played, planned };
+}
+// ids of games+players involved in a 3-in-a-row run: Set of "gid|player"
+function runs() {
+  const bad = new Set(), msgs = {};
+  S.games.forEach((g, i) => {
+    if (i < 2) return;
+    [g.a, g.b].forEach(p => {
+      const g1 = S.games[i - 1], g2 = S.games[i - 2];
+      if ([g1.a, g1.b].includes(p) && [g2.a, g2.b].includes(p)) {
+        [g, g1, g2].forEach(x => bad.add(x.id + '|' + p));
+        (msgs[g.id] = msgs[g.id] || []).push(p);
+      }
+    });
+  });
+  return { bad, msgs };
+}
+
+/* ---------- render ---------- */
+function render() {
+  const c = counts(), who = here();
+  $('pills').innerHTML = ALL.map(p => {
+    const on = S.present[p];
+    return `<button class="pill ${on ? '' : 'off'}" data-pill="${p}" ${on ? 'data-drag="pill"' : ''} data-player="${p}">
+      <b>${p}</b><span class="n"><em data-played>${c.played[p]}</em> <i>played · of <span data-planned>${c.planned[p]}</span></i></span></button>`;
+  }).join('');
+
+  if (S.first && !S.present[S.first]) S.first = '';
+  $('first').innerHTML = `<option value="">Random</option>` + who.map(p => `<option ${S.first === p ? 'selected' : ''}>${p}</option>`).join('');
+  $('total').textContent = S.games.length + ' games';
+
+  const { bad, msgs } = runs();
+  const nextId = (S.games.find(g => !isPlayed(g)) || {}).id;
+  const opps = new Set();
+  S.games.forEach(g => [g.o1, g.o2].forEach(o => o && opps.add(o)));
+  $('opps').innerHTML = [...opps].map(o => `<option value="${esc(o)}">`).join('');
+
+  $('games').innerHTML = S.games.length ? S.games.map((g, i) => {
+    const chip = (p, slot) => `<div class="chip ${bad.has(g.id + '|' + p) ? 'bad' : ''} ${S.present[p] ? '' : 'absent'}"
+      data-drag="chip" data-drop="chip" data-gid="${g.id}" data-slot="${slot}">${p}</div>`;
+    const showOpp = g.oOpen || g.o1 || g.o2;
+    return `<div class="game" data-gid="${g.id}">
+      <div class="handle" data-drag="game" data-gid="${g.id}" title="Drag to reorder">⠿</div>
+      <div class="num">${i + 1}</div>
+      <div class="chips">${chip(g.a, 'a')}${chip(g.b, 'b')}</div>
+      <button class="x" data-del="${g.id}" aria-label="Remove game">✕</button>
+      <div class="row2">
+        <div class="score">
+          <input class="us" type="number" inputmode="numeric" min="0" placeholder="us" value="${esc(g.us)}" data-f="us" data-gid="${g.id}" aria-label="Our score">
+          <small>–</small>
+          <input class="them" type="number" inputmode="numeric" min="0" placeholder="them" value="${esc(g.them)}" data-f="them" data-gid="${g.id}" aria-label="Their score">
+        </div>
+        <span class="badge nx" data-nx hidden>UP NEXT</span>
+        ${msgs[g.id] ? `<span class="badge warn">3 in a row: ${esc(msgs[g.id].join(', '))}</span>` : ''}
+        ${showOpp
+          ? `<div class="opp"><input list="opps" placeholder="vs player 1" value="${esc(g.o1)}" data-f="o1" data-gid="${g.id}">
+             <input list="opps" placeholder="vs player 2" value="${esc(g.o2)}" data-f="o2" data-gid="${g.id}"></div>`
+          : `<button class="oppbtn" data-opp="${g.id}">+ vs</button>`}
+      </div>
+    </div>`;
+  }).join('') + `<button class="add" id="add">+ add game</button>`
+    : `<div class="empty">Pick at least two players</div>`;
+
+  refresh();
+  $('undo').disabled = !hist.length;
+}
+
+// cheap updates that must not rebuild inputs (so typing/tabbing keeps focus)
+function refresh() {
+  const c = counts();
+  document.querySelectorAll('.pill').forEach(el => {
+    const p = el.dataset.player;
+    el.querySelector('[data-played]').textContent = c.played[p];
+    el.querySelector('[data-planned]').textContent = c.planned[p];
+  });
+  const nextId = (S.games.find(g => !isPlayed(g)) || {}).id;
+  let w = 0, l = 0, t = 0;
+  S.games.forEach(g => {
+    const el = document.querySelector(`.game[data-gid="${g.id}"]`);
+    const pl = isPlayed(g);
+    if (pl) { const d = g.us - g.them; d > 0 ? w++ : d < 0 ? l++ : t++; }
+    if (!el) return;
+    el.classList.toggle('win', pl && +g.us > +g.them);
+    el.classList.toggle('loss', pl && +g.us < +g.them);
+    el.classList.toggle('next', g.id === nextId);
+    el.querySelector('[data-nx]').hidden = g.id !== nextId;
+  });
+  $('rec').textContent = (w + l + t) ? `${w}–${l}${t ? '–' + t : ''}` : '';
+}
+
+/* ---------- events ---------- */
+let suppress = 0;
+document.addEventListener('click', e => {
+  if (Date.now() < suppress) return;
+  const pill = e.target.closest('[data-pill]');
+  if (pill) {
+    const p = pill.dataset.pill;
+    mutate(() => { S.present[p] = !S.present[p]; regen(); });
+    return;
+  }
+  const del = e.target.closest('[data-del]');
+  if (del) { mutate(() => { S.games = S.games.filter(g => g.id != del.dataset.del); }); return; }
+  const opp = e.target.closest('[data-opp]');
+  if (opp) { mutate(() => { S.games.find(g => g.id == opp.dataset.opp).oOpen = true; }); return; }
+  if (e.target.closest('#add')) addGame();
+});
+$('more').onclick = () => addGame();
+function addGame() {
+  if (here().length < 2) return toast('Pick at least two players');
+  mutate(() => { S.games.push(...plan(S.games, 1, here(), S.games.length ? '' : S.first)); });
+}
+$('less').onclick = () => {
+  const i = S.games.map(isPlayed).lastIndexOf(false);
+  if (i < 0) return toast('No unplayed games to remove');
+  mutate(() => S.games.splice(i, 1));
+};
+$('roll').onclick = () => mutate(regen);
+$('first').onchange = e => mutate(() => { S.first = e.target.value; regen(); });
+$('undo').onclick = () => { if (hist.length) { S = JSON.parse(hist.pop()); save(); render(); } };
+$('reset').onclick = () => {
+  if (!confirm('Clear all games and scores?')) return;
+  mutate(() => { S = fresh(); regen(); });
+};
+
+// typing scores / opponents: save without re-rendering
+document.addEventListener('input', e => {
+  const el = e.target.closest('[data-f]'); if (!el) return;
+  const g = S.games.find(g => g.id == el.dataset.gid); if (!g) return;
+  g[el.dataset.f] = el.value;
+  save(); refresh();
+});
+
+/* ---------- drag & drop (pointer events: works with mouse and touch) ---------- */
+let drag = null;
+document.addEventListener('pointerdown', e => {
+  const el = e.target.closest('[data-drag]');
+  if (!el || (e.pointerType === 'mouse' && e.button !== 0)) return;
+  drag = { el, kind: el.dataset.drag, x: e.clientX, y: e.clientY, on: false, target: null };
+});
+document.addEventListener('pointermove', e => {
+  if (!drag) return;
+  if (!drag.on) {
+    if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 8) return;
+    drag.on = true;
+    drag.ghost = drag.el.cloneNode(true);
+    drag.ghost.className += ' ghost';
+    if (drag.kind === 'game') drag.ghost.textContent = '⠿';
+    document.body.appendChild(drag.ghost);
+    (drag.kind === 'game' ? drag.el.closest('.game') : drag.el).classList.add('lifting');
+  }
+  e.preventDefault();
+  drag.ghost.style.left = e.clientX + 'px'; drag.ghost.style.top = e.clientY + 'px';
+  document.querySelectorAll('.over').forEach(x => x.classList.remove('over'));
+  const under = document.elementFromPoint(e.clientX, e.clientY);
+  let t = null;
+  if (under) {
+    if (drag.kind === 'game') t = under.closest('.game');
+    else t = under.closest('[data-drop="chip"]');
+  }
+  drag.target = t && t !== drag.el && !(drag.kind === 'game' && t.dataset.gid === drag.el.dataset.gid) ? t : null;
+  if (drag.target) drag.target.classList.add('over');
+}, { passive: false });
+function endDrag(drop) {
+  if (!drag) return;
+  const d = drag; drag = null;
+  if (!d.on) return;
+  suppress = Date.now() + 300; // swallow the click that follows a drag
+  d.ghost.remove();
+  document.querySelectorAll('.over,.lifting').forEach(x => x.classList.remove('over', 'lifting'));
+  if (drop && d.target) doDrop(d);
+}
+document.addEventListener('pointerup', () => endDrag(true));
+document.addEventListener('pointercancel', () => endDrag(false));
+document.addEventListener('contextmenu', e => { if (e.target.closest('[data-drag]')) e.preventDefault(); });
+
+function doDrop(d) {
+  const gid = id => S.games.find(g => g.id == id);
+  if (d.kind === 'game') {
+    const from = S.games.findIndex(g => g.id == d.el.dataset.gid), to = S.games.findIndex(g => g.id == d.target.dataset.gid);
+    mutate(() => { const [g] = S.games.splice(from, 1); S.games.splice(to, 0, g); });
+    return;
+  }
+  const tg = gid(d.target.dataset.gid), ts = d.target.dataset.slot;
+  if (d.kind === 'pill') {
+    const p = d.el.dataset.player;
+    if (tg[ts] === p) return;
+    const other = ts === 'a' ? 'b' : 'a';
+    if (tg[other] === p) return toast(p + ' is already in that game');
+    mutate(() => { tg[ts] = p; });
+  } else { // chip ↔ chip swap
+    const sg = gid(d.el.dataset.gid), ss = d.el.dataset.slot;
+    const sp = sg[ss], tp = tg[ts];
+    if (sg === tg) return mutate(() => { tg.a = [sp, tp][1]; tg.b = sp; if (ss === 'b') { tg.a = sp; tg.b = tp; } });
+    const so = ss === 'a' ? 'b' : 'a', to = ts === 'a' ? 'b' : 'a';
+    if (tg[to] === sp || sg[so] === tp) return toast('Already in that game');
+    mutate(() => { sg[ss] = tp; tg[ts] = sp; });
+  }
+}
+
+if (!S.games.length) { regen(); save(); }
+render();
+</script>
+</body>
+</html>
