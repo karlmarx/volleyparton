@@ -3,9 +3,9 @@
 // Source: https://pridesportsusa.com/register/rp_fpjif5
 const SEASON = {
   "division": "Division B",
-  "rank": 10,
+  "rank": 7,
   "teams": 16,
-  "pointsFor": 249,
+  "pointsFor": 339,
   "pointsAgainst": 229
 };
 const GAMES = [
@@ -43,7 +43,9 @@ const GAMES = [
   {
     "at": "2026-11-07T16:30:00.000Z",
     "opp": "Paulmann",
-    "court": 3
+    "court": 3,
+    "us": 10,
+    "them": 0
   },
   {
     "at": "2026-11-14T16:30:00.000Z",
