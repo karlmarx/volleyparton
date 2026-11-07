@@ -64,6 +64,7 @@
     .chip { flex: 1; min-width: 0; padding: 10px 6px; border-radius: 10px; background: #ffffff1a; border: 2px solid transparent;
       text-align: center; font-weight: 600; touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .chip.sel { border-color: var(--mint); background: #9dff8a33; }
     .chip.bad { border-color: var(--red); background: #ff5a5a33; }
     .chip.absent { text-decoration: line-through; opacity: .6; }
     .chip.over, .pill.over { outline: 3px dashed var(--mint); outline-offset: 1px; }
@@ -237,6 +238,7 @@ function runs() {
 
 /* ---------- render ---------- */
 function render() {
+  sel = null;
   const c = counts(), who = here();
   $('pills').innerHTML = ALL.map(p => {
     const on = S.present[p];
@@ -312,7 +314,20 @@ function refresh() {
 let suppress = 0;
 document.addEventListener('click', e => {
   if (Date.now() < suppress) return;
+  const chipEl = e.target.closest('.chip');
+  if (chipEl) {
+    const t = { gid: chipEl.dataset.gid, slot: chipEl.dataset.slot };
+    if (!sel) return setSel(t), toast('Now tap who to swap with');
+    const s0 = sel; setSel(null);
+    if (s0.gid === t.gid && s0.slot === t.slot) return;
+    return swapSlots(s0.gid, s0.slot, t.gid, t.slot);
+  }
   const pill = e.target.closest('[data-pill]');
+  if (pill && sel) { // a player is selected: this name replaces them
+    const s0 = sel; setSel(null);
+    if (!S.present[pill.dataset.pill]) return toast(pill.dataset.pill + ' is not playing today');
+    return putPlayer(s0.gid, s0.slot, pill.dataset.pill);
+  }
   if (pill) {
     const p = pill.dataset.pill;
     mutate(() => { S.present[p] = !S.present[p]; regen(); });
@@ -384,7 +399,14 @@ document.addEventListener('pointermove', e => {
   let t = null;
   if (under) {
     if (drag.kind === 'game') t = under.closest('.game');
-    else t = under.closest('[data-drop="chip"]');
+    else {
+      t = under.closest('[data-drop="chip"]');
+      const card = under.closest('.game');
+      if (!t && card) { // dropped on the card body: use the nearest player in that game
+        let bd = Infinity;
+        card.querySelectorAll('.chip').forEach(c => { const r = c.getBoundingClientRect(), d = Math.abs(e.clientX - (r.left + r.width / 2)); if (d < bd) { bd = d; t = c; } });
+      }
+    }
   }
   drag.target = t && t !== drag.el && !(drag.kind === 'game' && t.dataset.gid === drag.el.dataset.gid) ? t : null;
   if (drag.target) drag.target.classList.add('over');
@@ -409,22 +431,33 @@ function doDrop(d) {
     mutate(() => { const [g] = S.games.splice(from, 1); S.games.splice(to, 0, g); });
     return;
   }
-  const tg = gid(d.target.dataset.gid), ts = d.target.dataset.slot;
-  if (d.kind === 'pill') {
-    const p = d.el.dataset.player;
-    if (tg[ts] === p) return;
-    const other = ts === 'a' ? 'b' : 'a';
-    if (tg[other] === p) return toast(p + ' is already in that game');
-    mutate(() => { tg[ts] = p; });
-  } else { // chip ↔ chip swap
-    const sg = gid(d.el.dataset.gid), ss = d.el.dataset.slot;
-    const sp = sg[ss], tp = tg[ts];
-    if (sg === tg) return mutate(() => { tg.a = [sp, tp][1]; tg.b = sp; if (ss === 'b') { tg.a = sp; tg.b = tp; } });
+  const tg = d.target.dataset;
+  if (d.kind === 'pill') putPlayer(tg.gid, tg.slot, d.el.dataset.player);
+  else swapSlots(d.el.dataset.gid, d.el.dataset.slot, tg.gid, tg.slot);
+}
+
+// Swap two individual players (same game or different games).
+function swapSlots(sgid, ss, tgid, ts) {
+  const sg = S.games.find(g => g.id == sgid), tg = S.games.find(g => g.id == tgid);
+  if (sg === tg && ss === ts) return;
+  const sp = sg[ss], tp = tg[ts];
+  if (sg !== tg) {
     const so = ss === 'a' ? 'b' : 'a', to = ts === 'a' ? 'b' : 'a';
     if (tg[to] === sp || sg[so] === tp) return toast('Already in that game');
-    mutate(() => { sg[ss] = tp; tg[ts] = sp; });
   }
+  mutate(() => { sg[ss] = tp; tg[ts] = sp; });
 }
+// Put a player into one slot (the player there just comes out).
+function putPlayer(gid, slot, p) {
+  const g = S.games.find(g => g.id == gid);
+  if (g[slot] === p) return;
+  if (g[slot === 'a' ? 'b' : 'a'] === p) return toast(p + ' is already in that game');
+  mutate(() => { g[slot] = p; });
+}
+
+// Tap-to-swap: tap a player, then tap another player (or a name up top) — works on any device.
+let sel = null;
+function setSel(v) { sel = v; document.querySelectorAll('.chip').forEach(c => c.classList.toggle('sel', !!sel && c.dataset.gid == sel.gid && c.dataset.slot == sel.slot)); }
 
 if (!S.games.length) regen();
 render();
