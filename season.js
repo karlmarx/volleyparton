@@ -49,7 +49,10 @@ const GAMES = [
   },
   {
     "at": "2026-11-14T16:30:00.000Z",
-    "opp": "TBD",
+    "opp": "DILF Pickle",
+    "court": 5,
+    "us": 1,
+    "them": 8,
     "title": "Playoffs, Round 1"
   },
   {
