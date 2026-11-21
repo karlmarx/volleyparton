@@ -56,8 +56,7 @@ const GAMES = [
     "title": "Playoffs, Round 1"
   },
   {
-    "at": "2026-11-21T16:30:00.000Z",
-    "opp": "TBD",
-    "title": "Playoffs: The Finale"
+    "at": "2026-12-05T16:30:00.000Z",
+    "opp": "TBD"
   }
 ];
